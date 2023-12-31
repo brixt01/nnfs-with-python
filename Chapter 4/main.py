@@ -34,6 +34,21 @@ class Activation_ReLU:
     def forward(self, inputs):
         self.output = np.maximum(0, inputs)     # For each element, set to 0 if value<0
 
+# Softmax activation function
+#
+# Used for classification. 
+# Eponenentiates all values (to get rid of negatives), then divides them each 
+# By the sum of outputs for the current sample. AKA the outputs end up being 
+# confidence values, with a sum of 1. Maximum is subtracted from all, to stop
+# exploding values
+class Activation_Softmax:
+
+    # Forward pass
+    def forward(self, inputs):
+        exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))     # Subtract max then exponentiate each value
+        probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)      # Divide by the sum of given sample's outputs
+        self.output = probabilities     # Output is a confidence score for each output, summing to 1
+
 if __name__ == "__main__":
 
     np.random.seed(0)       # Set random seed, so all data matches book
