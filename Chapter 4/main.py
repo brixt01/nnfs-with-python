@@ -51,29 +51,25 @@ class Activation_Softmax:
 
 if __name__ == "__main__":
 
-    np.random.seed(0)       # Set random seed, so all data matches book
-    x, y = nnfs_spiral_data(100, 3)     # Get sample data: x=data, y=classes
+    # Get sample data (coordinates of spiral points w/ 3 classes)
+    np.random.seed(0)
+    x, y = nnfs_spiral_data(100, 3)
 
     # Input layer
-    #
-    # Two inputs (x and y coordinates)
-    # Three neurons
-    # ReLU activation function
-    dense1 = Layer_Dense(n_inputs=2, n_neurons=3)
-    activation1 = Activation_ReLU()
+    dense1 = Layer_Dense(n_inputs=2, n_neurons=3)       # 2 inputs (x, y), 3 neurons
+    activation1 = Activation_ReLU()     # ReLU activation function
     
     # Output layer
-    #
-    # Three inputs
-    # Three neurons
-    # Softmax activation function
-    dense2 = Layer_Dense(3, 3)
-    activation2 = Activation_Softmax()
+    dense2 = Layer_Dense(3, 3)      # 3 inputs, 3 neurons
+    activation2 = Activation_Softmax()      # Softmax activation function
     
+    # Pass data through first layer
     dense1.forward(x)
     activation1.forward(dense1.output)
 
+    # Pass data through second layer
     dense2.forward(activation1.output)
     activation2.forward(dense2.output)
 
+    # Print outputs
     print(activation2.output[:5])
