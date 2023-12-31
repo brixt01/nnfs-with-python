@@ -1,3 +1,8 @@
+'''
+Title: NNFS module
+Author: Ben Brixton
+'''
+
 import numpy as np
 
 # Initialise module
