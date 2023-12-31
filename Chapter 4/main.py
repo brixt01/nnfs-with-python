@@ -4,7 +4,7 @@ Author: Ben Brixton
 '''
 
 import numpy as np
-from nnfs import nnfs_init, nnfs_spiral_data
+from nnfs import nnfs_spiral_data
 import matplotlib.pyplot as plt
 
 class Layer_Dense:
