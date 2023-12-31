@@ -50,6 +50,8 @@ class Activation_Softmax:
         self.output = probabilities     # Output is a confidence score for each output, summing to 1
 
 # (common) loss
+#
+# Used as a base for other loss calculation
 class Loss:
 
     def calculate(self, output, y):
@@ -60,8 +62,8 @@ class Loss:
 
 # CCE (Categorical Cross-Entropy) loss
 #
-# Used fro calculating loss for categories, when given a softmax output and
-# the target values
+# Used for calculating loss for categories, when given a softmax output and
+# the target values (as either list of categorical or one-hot encoded labels)
 class Loss_CCE(Loss):
 
     def forward(self, y_pred, y_true):
