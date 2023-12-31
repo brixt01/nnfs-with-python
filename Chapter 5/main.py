@@ -49,7 +49,50 @@ class Activation_Softmax:
         probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)      # Divide by the sum of given sample's outputs
         self.output = probabilities     # Output is a confidence score for each output, summing to 1
 
+# (common) loss
+class Loss:
+
+    def calculate(self, output, y):
+
+        sample_losses = self.forward(output, y)     # Calculate sample losses
+        data_loss = np.mean(sample_losses)      # Calculate mean loss
+        return data_loss        # Return average loss
+
+# CCE (Categorical Cross-Entropy) loss
+#
+# Used fro calculating loss for categories, when given a softmax output and
+# the target values
+class Loss_CCE(Loss):
+
+    def forward(self, y_pred, y_true):
+        n_samples = len(y_pred)     # Number of samples in batch
+
+        y_pred_clipped = np.clip(y_pred, 1e-7, 1-1e-7)      # Clip to prevent division by 0
+
+        # If given as categorical labels
+        if len(y_true.shape) == 1:
+            correct_confidences = y_pred_clipped[
+                range(n_samples),
+                y_true
+            ]
+
+        # If given as one-hot encoded labels
+        elif len(y_true.shape) == 2:
+            correct_confidences = np.sum(
+                y_pred_clipped * y_true,
+                axis=1
+            )
+        
+        # Calculate losses
+        negative_log_likelihoods = -np.log(correct_confidences)
+        return negative_log_likelihoods
+
+
 if __name__ == "__main__":
+
+    '''
+    Initlialisation
+    '''
 
     # Get sample data (coordinates of spiral points w/ 3 classes)
     np.random.seed(0)
@@ -63,6 +106,10 @@ if __name__ == "__main__":
     dense2 = Layer_Dense(3, 3)      # 3 inputs, 3 neurons
     activation2 = Activation_Softmax()      # Softmax activation function
     
+    '''
+    Forward passing
+    '''
+
     # Pass data through first layer
     dense1.forward(x)
     activation1.forward(dense1.output)
@@ -71,5 +118,14 @@ if __name__ == "__main__":
     dense2.forward(activation1.output)
     activation2.forward(dense2.output)
 
+    '''
+    Output
+    '''
+
+    # Calculate loss
+    loss_function = Loss_CCE()
+    loss = loss_function.calculate(activation2.output, y)
+
     # Print outputs
     print(activation2.output[:5])
+    print(f"Loss: {loss}")
