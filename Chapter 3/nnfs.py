@@ -2,7 +2,7 @@ import numpy as np
 
 # Initialise module
 def nnfs_init():
-    np.random.seed = 0
+    np.random.seed(0)
 
 # Make and return spiral data
 def nnfs_spiral_data(points, classes):
