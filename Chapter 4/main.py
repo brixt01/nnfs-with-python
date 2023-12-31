@@ -54,11 +54,26 @@ if __name__ == "__main__":
     np.random.seed(0)       # Set random seed, so all data matches book
     x, y = nnfs_spiral_data(100, 3)     # Get sample data: x=data, y=classes
 
-    # First hidden layer, 2 inputs (x and y coords), three neurons
+    # Input layer
+    #
+    # Two inputs (x and y coordinates)
+    # Three neurons
+    # ReLU activation function
     dense1 = Layer_Dense(n_inputs=2, n_neurons=3)
     activation1 = Activation_ReLU()
+    
+    # Output layer
+    #
+    # Three inputs
+    # Three neurons
+    # Softmax activation function
+    dense2 = Layer_Dense(3, 3)
+    activation2 = Activation_Softmax()
     
     dense1.forward(x)
     activation1.forward(dense1.output)
 
-    print(activation1.output[:5])
+    dense2.forward(activation1.output)
+    activation2.forward(dense2.output)
+
+    print(activation2.output[:5])
