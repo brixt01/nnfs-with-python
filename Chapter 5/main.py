@@ -128,6 +128,13 @@ if __name__ == "__main__":
     loss_function = Loss_CCE()
     loss = loss_function.calculate(activation2.output, y)
 
+    # Calulate accuracy
+    predicitons = np.argmax(activation2.output, axis=1)
+    if len(y.shape) == 2:       # Convert from one-hot to categorical labels
+        y = np.argmax(y, axis=1)
+    accuracy = np.mean(predicitons==y)
+
     # Print outputs
     print(activation2.output[:5])
     print(f"Loss: {loss}")
+    print(f"Accuracy: {accuracy}")
