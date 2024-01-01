@@ -100,7 +100,17 @@ class Loss_CCE(Loss):
         # Calculate losses
         negative_log_likelihoods = -np.log(correct_confidences)
         return negative_log_likelihoods
+    
+    # Backward pass
+    def backward(self, dvalues, y_true):
+        num_samples = len(dvalues)
+        num_labels = len(dvalues[0])
 
+        if len(y_true.shape) == 1:      # Convert to one-hot encoded labels
+            y_true = np.eye(num_labels)[y_true]
+
+        self.dinputs = -y_true / dvalues
+        self.dinputs = self.dinputs/num_samples
 
 if __name__ == "__main__":
 
