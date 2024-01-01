@@ -22,6 +22,13 @@ class Layer_Dense:
     # Forward pass
     def forward(self, inputs):      # Inputs: Rows = each sample, Cols = each input (x and y coords)
         self.output = np.dot(inputs, self.weights) + self.biases        # Output: Rows = each sample, Cols = each neuron
+        self.inputs = inputs        # Remember inputs - needed for backpropogation
+
+    # Backward pass
+    def backward(self, dvalues):
+        self.dweights = np.dot(self.inputs.T, dvalues)
+        self.dbiases = np.sum(dvalues, axis=0, keepdims=True)
+        self.dinputs = np.dot(dvalues, self.weights.T)
 
 # ReLU (Rectified Linear Unit) activation function
 #
@@ -33,6 +40,11 @@ class Activation_ReLU:
     # Forward pass
     def forward(self, inputs):
         self.output = np.maximum(0, inputs)     # For each element, set to 0 if value<0
+
+    # Backward pass
+    def backward(self, dvalues):
+        self.dinputs = dvalues.copy()
+        self.dinputs[self.inputs <= 0] = 0
 
 # Softmax activation function
 #
