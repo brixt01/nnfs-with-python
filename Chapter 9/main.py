@@ -39,6 +39,7 @@ class Activation_ReLU:
 
     # Forward pass
     def forward(self, inputs):
+        self.inputs = inputs
         self.output = np.maximum(0, inputs)     # For each element, set to 0 if value<0
 
     # Backward pass
@@ -123,6 +124,32 @@ class Loss_CCE(Loss):
         self.dinputs = -y_true / dvalues
         self.dinputs = self.dinputs/num_samples
 
+# Softmax activation and CCE loss combination
+#
+# Combines the functionality of softmax and CCE into one function, which is able
+# to perform faster (due to parts of backpropogation cancelling out)
+class Activation_Softmax_Loss_CCE():
+    
+    def __init__(self):
+        self.activation = Activation_Softmax()
+        self.loss = Loss_CCE()
+    
+    # Forward pass
+    def forward(self, inputs, y_true):
+        self.activation.forward(inputs)
+        self.output = self.activation.output
+        return self.loss.calculate(self.output, y_true)
+
+    # Backward pass
+    def backward(self, dvalues, y_true):
+        num_samples = len(dvalues)
+        if len(y_true.shape) == 2:
+            y_true = np.argmax(y_true, axis=1)
+        self.dinputs = dvalues.copy()
+        self.dinputs[range(num_samples), y_true] -= 1
+        self.dinputs = self.dinputs / num_samples
+
+
 if __name__ == "__main__":
 
     '''
@@ -139,70 +166,50 @@ if __name__ == "__main__":
     
     # Output layer
     dense2 = Layer_Dense(3, 3)      # 3 inputs, 3 neurons
-    activation2 = Activation_Softmax()      # Softmax activation function
+    loss_activation = Activation_Softmax_Loss_CCE()      # Softmax activation function
 
-    # Loss Function
-    loss_function = Loss_CCE()
-
-    # Helper variables
-    lowest_loss = 999_999
-    best_dense1_weights = dense1.weights.copy()
-    best_dense1_biases = dense1.biases.copy()
-    best_dense2_weights = dense2.weights.copy()
-    best_dense2_biases = dense2.biases.copy()
 
     '''
-    Training
+    Forward passing
     '''
 
-    for iteration in range(100_000):
-        '''
-        Updating weights
-        '''
+    # Pass data through first layer
+    dense1.forward(x)
+    activation1.forward(dense1.output)
 
-        dense1.weights += 0.05 * np.random.randn(2, 3)
-        dense1.biases += 0.05 * np.random.randn(1, 3)
-        dense2.weights += 0.05 * np.random.randn(3, 3)
-        dense2.biases += 0.05 * np.random.randn(1, 3)
+    # Pass data through second layer
+    dense2.forward(activation1.output)
+    loss = loss_activation.forward(dense2.output, y)
 
-        '''
-        Forward passing
-        '''
+    '''
+    Outputting
+    '''
 
-        # Pass data through first layer
-        dense1.forward(x)
-        activation1.forward(dense1.output)
+    print(loss_activation.output[:5])
+    print(f"Loss: {loss}")
 
-        # Pass data through second layer
-        dense2.forward(activation1.output)
-        activation2.forward(dense2.output)
+    # Calulate accuracy
+    predicitons = np.argmax(loss_activation.output, axis=1)
+    if len(y.shape) == 2:       # Convert from one-hot to categorical labels
+        y = np.argmax(y, axis=1)
+    accuracy = np.mean(predicitons==y)
 
-        '''
-        Calculating
-        '''
+    print(f"Acc: {accuracy}")
 
-        # Calculate loss
-        loss = loss_function.calculate(activation2.output, y)
+    '''
+    Backward passing
+    '''
 
-        # Calulate accuracy
-        predicitons = np.argmax(activation2.output, axis=1)
-        if len(y.shape) == 2:       # Convert from one-hot to categorical labels
-            y = np.argmax(y, axis=1)
-        accuracy = np.mean(predicitons==y)
+    loss_activation.backward(loss_activation.output, y)
+    dense2.backward(loss_activation.dinputs)
+    activation1.backward(dense2.dinputs)
+    dense1.backward(activation1.dinputs)
 
-        '''
-        Outputting
-        '''
+    '''
+    Outputting
+    '''
 
-        if loss < lowest_loss:
-            print(f"New set of weights found! Iteration: {iteration}, Loss: {loss}, Accuracy: {accuracy}")
-            lowest_loss = loss
-            best_dense1_weights = dense1.weights.copy()
-            best_dense1_biases = dense1.biases.copy()
-            best_dense2_weights = dense2.weights.copy()
-            best_dense2_biases = dense2.biases.copy()
-        else:
-            dense1.weights = best_dense1_weights.copy()
-            dense1.biases = best_dense1_biases.copy()
-            dense2.weights = best_dense2_weights.copy()
-            dense2.biases = best_dense2_biases.copy()
+    print(dense1.dweights)
+    print(dense1.dbiases)
+    print(dense2.dweights)
+    print(dense2.dbiases)
