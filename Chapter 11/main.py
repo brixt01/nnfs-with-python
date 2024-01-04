@@ -31,7 +31,12 @@ if __name__ == "__main__":
     '''
     Training loop
     '''
-    
+
+    # Helper variables
+    loss_y = []
+    acc_y = []
+    lr_y = []
+
     for epoch in range(10001):
 
         '''
@@ -52,12 +57,14 @@ if __name__ == "__main__":
             y = np.argmax(y, axis=1)
         accuracy = np.mean(predictions==y)
         if not epoch % 100:
-            print(f' \
-                  epoch: {epoch} \
-                  acc: {accuracy:.3f} \
-                  loss: {loss:.3f} \
-                  lr: {optimizer.current_learning_rate} \
-            ')
+            print(f"epoch: {epoch} " + \
+                  f"acc: {accuracy:.3f} " + \
+                  f"loss: {loss:.3f} " + \
+                  f"lr: {optimizer.current_learning_rate:.3f}"
+            )
+        loss_y.append(loss)
+        acc_y.append(accuracy)
+        lr_y.append(optimizer.current_learning_rate)
         
         '''
         Backward pass
@@ -76,3 +83,33 @@ if __name__ == "__main__":
         optimizer.update_params(dense1)
         optimizer.update_params(dense2)
         optimizer.post_update_params()
+
+    '''
+    Show input data
+    '''
+
+    plt.scatter(X[:, 0], X[:, 1], c=y, cmap='brg')
+
+    '''
+    Show stats
+    '''
+
+    fig, ax = plt.subplots(3, 1, sharex=True)
+
+    ax[0].plot(loss_y)
+    ax[0].set_ylabel("Loss")
+
+    ax[1].plot(acc_y)
+    ax[1].set_ylabel("Accuracy")
+    
+    ax[2].plot(lr_y)
+    ax[2].set_ylabel("Learning rate")
+
+    fig.suptitle("NNFS with Python")
+    ax[2].set_xlabel("Epochs")
+
+    for axis in ax:
+        axis.grid(axis='both', which='both')
+        axis.minorticks_on()
+
+    plt.show()
