@@ -37,6 +37,8 @@ if __name__ == "__main__":
     acc_y = []
     lr_y = []
 
+    print("TRAINING:")
+
     for epoch in range(10001):
 
         '''
@@ -56,7 +58,8 @@ if __name__ == "__main__":
         if len(y.shape) == 2:
             y = np.argmax(y, axis=1)
         accuracy = np.mean(predictions==y)
-        if not epoch % 100:
+
+        if not epoch % 1000:
             print(f"epoch: {epoch} " + \
                   f"acc: {accuracy:.3f} " + \
                   f"loss: {loss:.3f} " + \
@@ -83,6 +86,25 @@ if __name__ == "__main__":
         optimizer.update_params(dense1)
         optimizer.update_params(dense2)
         optimizer.post_update_params()
+
+    '''
+    Test model
+    '''
+
+    X_test, y_test = nnfs.spiral_data(samples=100, classes=3)
+    
+    dense1.forward(X_test)
+    activation1.forward(dense1.output)
+    dense2.forward(activation1.output)
+    loss = loss_activation.forward(dense2.output, y_test)
+
+    predictions = np.argmax(loss_activation.output, axis=1)
+    if len(y.shape) == 2:
+        y = np.argmax(y, axis=1)
+    accuracy = np.mean(predictions==y)
+
+    print("TESTING:")
+    print(f"Acc: {accuracy:.3f}, Loss: {loss:.3f}")
 
     '''
     Show input data
